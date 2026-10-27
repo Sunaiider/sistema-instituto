@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+{% block title %}Administrar notas{% endblock %}
+{% block content %}
+  <section class="page-heading">
+    <div><p class="eyebrow">Solo administrador</p><h1>Agregar o editar notas</h1>
+      <p class="muted">Elige grado, aula, materia y periodo. Puedes ingresar una nota nueva o cambiar una ya registrada para cualquiera de los alumnos.</p>
+    </div>
+    <a class="button button-secondary" href="{{ url_for('grade_list') }}">Volver a notas</a>
+  </section>
+  <section class="card">
+    <form method="get" class="filter-row">
+      <label>Grado y aula
+        <select name="classroom_id" required>
+          <option value="">Seleccionar...</option>
+          {% for classroom in classrooms %}
+            <option value="{{ classroom['id'] }}" {{ 'selected' if classroom_id == classroom['id'] else '' }}>{{ classroom['grade'] }} · {{ classroom['name'] }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Materia
+        <select name="subject_id" required>
+          <option value="">Seleccionar...</option>
+          {% for subject in subjects %}
+            <option value="{{ subject['id'] }}" {{ 'selected' if subject_id == subject['id'] else '' }}>{{ subject['name'] }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Periodo / trimestre
+        <input name="term" value="{{ term }}" placeholder="Ej. Primer trimestre" required>
+      </label>
+      <button class="button button-secondary" type="submit">Cargar alumnos</button>
+    </form>
+  </section>
+  {% if classroom_id and subject_id and term %}
+    <section class="card">
+      <div class="section-heading">
+        <div><h2>Lista de alumnos</h2><p class="muted">Las notas existentes se muestran para editarlas. Deja vacio el campo si no deseas cambiar o agregar una nota a ese alumno.</p></div>
+      </div>
+      {% if students %}
+        <form method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="classroom_id" value="{{ classroom_id }}">
+          <input type="hidden" name="subject_id" value="{{ subject_id }}">
+          <input type="hidden" name="term" value="{{ term }}">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Alumno</th><th>Nota</th><th>Estado</th></tr></thead>
+              <tbody>
+                {% for student in students %}
+                  {% set grade = existing_grades.get(student['id']) %}
+                  <tr>
+                    <td>{{ student['name'] }}</td>
+                    <td><input class="score-input" name="score_{{ student['id'] }}" type="number" min="0" max="100" step="0.01" value="{{ grade['score'] if grade else '' }}"></td>
+                    <td>{% if grade %}<span class="badge badge-locked">Registrada · editable por administrador</span>{% else %}<span class="badge">Sin nota</span>{% endif %}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <div class="form-actions"><button class="button button-primary" type="submit">Guardar cambios</button></div>
+        </form>
+      {% else %}
+        <p class="empty-state">No hay alumnos en este grado y aula. Agrega alumnos desde Administracion.</p>
+      {% endif %}
+    </section>
+  {% endif %}
+{% endblock %}

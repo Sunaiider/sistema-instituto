@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+{% block title %}Inicio{% endblock %}
+{% block content %}
+  <section class="page-heading">
+    <div>
+      <p class="eyebrow">{{ 'Panel de administracion' if g.user['role'] == 'admin' else 'Portal del maestro' }}</p>
+      <h1>Bienvenido, {{ g.user['username'] }}</h1>
+      <p class="muted">
+        {% if g.user['role'] == 'teacher' %}
+          Selecciona el grado y aula para registrar calificaciones. Una vez guardadas, solo un administrador podra cambiarlas.
+        {% else %}
+          Administra las cuentas y grupos, revisa las calificaciones y exporta los registros a Excel.
+        {% endif %}
+      </p>
+    </div>
+    {% if g.user['role'] == 'teacher' %}
+      <a class="button button-primary" href="{{ url_for('new_grades') }}">Registrar notas</a>
+    {% else %}
+      <a class="button button-primary" href="{{ url_for('admin') }}">Administrar sistema</a>
+    {% endif %}
+  </section>
+  <section class="stats">
+    <article class="stat-card"><span>Notas registradas</span><strong>{{ grade_count }}</strong></article>
+    <article class="stat-card"><span>Alumnos</span><strong>{{ student_count }}</strong></article>
+    <article class="stat-card"><span>Grados y aulas</span><strong>{{ classroom_count }}</strong></article>
+  </section>
+  <section class="card">
+    <div class="section-heading">
+      <div><h2>Calificaciones</h2><p class="muted">Consulta los registros y descarga el archivo Excel.</p></div>
+      <a class="button button-secondary" href="{{ url_for('grade_list') }}">Ver notas</a>
+    </div>
+  </section>
+{% endblock %}

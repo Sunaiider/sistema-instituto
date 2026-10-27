@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{% block title %}Asignaciones de {{ teacher['username'] }}{% endblock %}
+{% block content %}
+  <section class="page-heading">
+    <div><p class="eyebrow">Administracion de maestros</p><h1>Asignaciones de {{ teacher['username'] }}</h1>
+      <p class="muted">Marca las combinaciones exactas de materias y grados/aulas que este maestro puede consultar, exportar y calificar. Guardar reemplaza la lista actual.</p>
+    </div>
+    <a class="button button-secondary" href="{{ url_for('admin') }}">Volver a administracion</a>
+  </section>
+  <section class="card">
+    {% if assignment_options %}
+      <form method="post" class="stack">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="assignment-picker">
+          {% for option in assignment_options %}
+            {% set key = option['subject_id'] ~ ':' ~ option['classroom_id'] %}
+            <label class="assignment-option">
+              <input type="checkbox" name="assignments" value="{{ key }}" {{ 'checked' if key in current_assignments else '' }}>
+              <span>{{ option['subject'] }} · {{ option['grade'] }} · Aula {{ option['classroom'] }}</span>
+            </label>
+          {% endfor %}
+        </div>
+        <div class="form-actions">
+          <a class="button button-secondary" href="{{ url_for('admin') }}">Cancelar</a>
+          <button class="button button-primary" type="submit">Guardar asignaciones</button>
+        </div>
+      </form>
+    {% else %}
+      <p class="empty-state">Agrega materias y grados/aulas antes de asignarlos a este maestro.</p>
+    {% endif %}
+  </section>
+{% endblock %}

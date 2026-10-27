@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+ENV/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Flask / local app data
+instance/*.sqlite
+instance/*.sqlite3
+instance/*.db
+instance/*.db-journal
+
+# Environment / secrets
+.env
+.env.*
+.secret
+*.pem
+
+# Editor / OS
+.vscode/
+*.code-workspace
+.DS_Store
+Thumbs.db
+
+# Coverage / logs
+.coverage
+coverage.xml
+htmlcov/
+*.log

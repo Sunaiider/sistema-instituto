@@ -1,0 +1,53 @@
+{% extends "layout.html" %}
+{% block title %}Notas de {{ subject['name'] }}{% endblock %}
+{% block content %}
+  <section class="page-heading">
+    <div><p class="eyebrow">{{ subject['name'] }} · {{ classroom['grade'] }} · Aula {{ classroom['name'] }}</p>
+      <h1>Notas de alumnos</h1>
+      <p class="muted">{% if g.user['role'] == 'teacher' %}Estas son tus calificaciones registradas para esta materia y aula.{% else %}Consulta cada calificacion. Cada boton de edicion abre la lista completa de alumnos de este grado y aula.{% endif %}</p>
+    </div>
+    <div class="heading-actions">
+      {% if grades %}
+        <a class="button button-primary" href="{{ url_for('export_classroom_subject', classroom_id=classroom['id'], subject_id=subject['id']) }}">Descargar Excel</a>
+      {% endif %}
+      {% if g.user['role'] == 'admin' %}
+        {% set first_grade = grades|first %}
+        {% if first_grade %}
+          <a class="button button-secondary" href="{{ url_for('manage_grades', classroom_id=classroom['id'], subject_id=subject['id'], term=first_grade['term']) }}">Agregar / editar notas</a>
+        {% else %}
+          <a class="button button-secondary" href="{{ url_for('manage_grades', classroom_id=classroom['id'], subject_id=subject['id']) }}">Agregar notas</a>
+        {% endif %}
+      {% endif %}
+      <a class="button button-primary" href="{{ url_for('grade_list') }}">Volver a materias</a>
+    </div>
+  </section>
+  <section class="card table-card">
+    {% if grades %}
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Alumno</th><th>Periodo</th><th>Nota</th><th>Maestro</th><th>Fecha</th>{% if g.user['role'] == 'admin' %}<th>Acciones</th>{% endif %}</tr></thead>
+          <tbody>
+            {% for grade in grades %}
+              <tr>
+                <td>{{ grade['student_name'] }}</td><td>{{ grade['term'] }}</td>
+                <td><strong>{{ grade['score']|round(2) }}</strong></td>
+                <td>{{ grade['teacher'] }}</td><td>{{ grade['created_at'][:10] }}</td>
+                {% if g.user['role'] == 'admin' %}
+                  <td class="actions">
+                    <a class="button button-small button-secondary" href="{{ url_for('edit_grade', grade_id=grade['id']) }}">Editar</a>
+                    <form method="post" action="{{ url_for('delete_grade', grade_id=grade['id']) }}" onsubmit="return confirm('¿Eliminar esta nota? Esta accion no se puede deshacer.');">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button class="button button-small button-danger" type="submit">Eliminar</button>
+                    </form>
+                  </td>
+                {% endif %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="empty-state">No hay notas registradas para esta materia y aula.</p>
+    {% endif %}
+  </section>
+{% endblock %}

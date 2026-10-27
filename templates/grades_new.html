@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+{% block title %}Registrar notas{% endblock %}
+{% block content %}
+  <section class="page-heading">
+    <div><p class="eyebrow">Captura de calificaciones</p><h1>Registrar notas</h1>
+      <p class="muted">Al guardar, las notas quedan bloqueadas para el maestro. Revisa los datos antes de enviar.</p></div>
+  </section>
+  <section class="card">
+    <form method="get" class="filter-row">
+      <label>Grado y aula
+        <select name="classroom_id" required>
+          <option value="">Seleccionar...</option>
+          {% for classroom in classrooms %}
+            <option value="{{ classroom['id'] }}" {{ 'selected' if selected_classroom == classroom['id'] else '' }}>
+              {{ classroom['grade'] }} · {{ classroom['name'] }}
+            </option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Materia
+        <select name="subject_id" required>
+          <option value="">Seleccionar...</option>
+          {% for subject in subjects %}
+            <option value="{{ subject['id'] }}" {{ 'selected' if subject_id == subject['id'] else '' }}>{{ subject['name'] }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Periodo / trimestre
+        <input name="term" value="{{ term }}" placeholder="Ej. Primer trimestre" required>
+      </label>
+      <button class="button button-secondary" type="submit">Cargar alumnos</button>
+    </form>
+  </section>
+  {% if selected_classroom and subject_id and term %}
+    <section class="card">
+      <div class="section-heading">
+        <div><h2>Lista de alumnos</h2><p class="muted">Calificacion de 0 a 100. Las notas ya guardadas aparecen como bloqueadas.</p></div>
+      </div>
+      {% if students %}
+        <form method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="classroom_id" value="{{ selected_classroom }}">
+          <input type="hidden" name="subject_id" value="{{ subject_id }}">
+          <input type="hidden" name="term" value="{{ term }}">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Alumno</th><th>Nota</th><th>Estado</th></tr></thead>
+              <tbody>
+                {% for student in students %}
+                  {% set locked = student['id'] in existing_ids %}
+                  <tr>
+                    <td>{{ student['name'] }}</td>
+                    <td><input class="score-input" name="score_{{ student['id'] }}" type="number" min="0" max="100" step="0.01" {{ 'disabled' if locked else '' }}></td>
+                    <td>{% if locked %}<span class="badge badge-locked">Ya registrada · bloqueada</span>{% else %}<span class="badge">Pendiente</span>{% endif %}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <div class="form-actions"><button class="button button-primary" type="submit">Guardar notas</button></div>
+        </form>
+      {% else %}
+        <p class="empty-state">No hay alumnos registrados en este grado y aula. Pide al administrador que los agregue.</p>
+      {% endif %}
+    </section>
+  {% endif %}
+{% endblock %}
