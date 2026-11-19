@@ -1,0 +1,30 @@
+services:
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: instituto
+      MYSQL_USER: instituto_user
+      MYSQL_PASSWORD: instituto_pass
+      MYSQL_ROOT_PASSWORD: rootpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  app:
+    build: .
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: mysql+pymysql://instituto_user:instituto_pass@db:3306/instituto
+      SECRET_KEY: change-me
+      COOKIE_SECURE: "false"
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    command: sh -c "python -m flask --app app run --host 0.0.0.0 --port 5000"
+
+volumes:
+  mysql_data:

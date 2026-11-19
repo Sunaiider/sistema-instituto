@@ -13,8 +13,14 @@
           {% endfor %}
         </select>
       </label>
-      <label>Periodo / trimestre<input name="term" value="{{ grade['term'] }}" required></label>
-      <label>Nota (0 a 100)<input name="score" type="number" min="0" max="100" step="0.01" value="{{ grade['score'] }}" required></label>
+      <label>Corte evaluativo
+        <select name="term" required>
+          {% for period in periods %}
+            <option value="{{ period }}" {{ 'selected' if grade['term'] == period else '' }}>{{ period }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Nota (número de 0 a 100 o texto de hasta 3 caracteres)<input name="score" type="text" maxlength="6" value="{{ grade['score'] }}" required></label>
       <div class="form-actions"><a class="button button-secondary" href="{{ url_for('grade_list') }}">Cancelar</a><button class="button button-primary" type="submit">Guardar cambios</button></div>
     </form>
   </section>

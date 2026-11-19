@@ -2,10 +2,10 @@
 {% block title %}Asignaciones de {{ teacher['username'] }}{% endblock %}
 {% block content %}
   <section class="page-heading">
-    <div><p class="eyebrow">Administracion de maestros</p><h1>Asignaciones de {{ teacher['username'] }}</h1>
+    <div><p class="eyebrow">Administración de maestros</p><h1>Asignaciones de {{ teacher['username'] }}</h1>
       <p class="muted">Marca las combinaciones exactas de materias y grados/aulas que este maestro puede consultar, exportar y calificar. Guardar reemplaza la lista actual.</p>
     </div>
-    <a class="button button-secondary" href="{{ url_for('admin') }}">Volver a administracion</a>
+    <a class="button button-secondary" href="{{ url_for('admin') }}">Volver a administración</a>
   </section>
   <section class="card">
     {% if assignment_options %}

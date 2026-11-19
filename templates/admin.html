@@ -1,20 +1,21 @@
 {% extends "layout.html" %}
-{% block title %}Administracion{% endblock %}
+{% block title %}Administración{% endblock %}
 {% block content %}
-  <section class="page-heading"><div><p class="eyebrow">Control del sistema</p><h1>Administracion</h1>
-    <p class="muted">Crea cuentas, organiza los grupos, registra alumnos y agrega materias.</p></div>
+  <section class="page-heading"><div><p class="eyebrow">Control del sistema</p><h1>Administración</h1>
+    <p class="muted">Crea cuentas, organiza los grupos y las materias, y gestiona estudiantes desde su sección.</p></div>
     <div class="heading-actions">
       <a class="button button-secondary" href="{{ url_for('grade_list') }}">Ver notas</a>
       <a class="button button-primary" href="{{ url_for('manage_grades') }}">Agregar o editar notas</a>
+      <a class="button button-secondary" href="{{ url_for('admin_students') }}">Gestionar estudiantes</a>
     </div>
   </section>
   <div class="admin-grid">
     <section class="card">
-      <h2>Crear cuenta</h2><p class="muted">Usa contrasenas de al menos 12 caracteres.</p>
+      <h2>Crear cuenta</h2><p class="muted">Usa contraseñas de al menos 6 caracteres.</p>
       <form method="post" action="{{ url_for('create_user') }}" class="stack">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <label>Nombre de usuario<input name="username" required maxlength="80"></label>
-        <label>Contrasena inicial<input name="password" type="password" minlength="12" required autocomplete="new-password"></label>
+        <label>Contraseña inicial<input name="password" type="password" minlength="6" required autocomplete="new-password"></label>
         <label>Rol<select name="role"><option value="teacher">Maestro</option><option value="admin">Administrador</option></select></label>
         <fieldset class="assignment-picker">
           <legend>Asignaciones del maestro</legend>
@@ -39,11 +40,12 @@
             <span>{{ user['username'] }}{% if user['id'] == current_user_id %} <span class="muted">(tu cuenta)</span>{% endif %}</span>
             <span class="account-actions">
               <span class="badge">{{ 'Administrador' if user['role'] == 'admin' else 'Maestro' }}</span>
+              <a class="button button-small button-secondary" href="{{ url_for('edit_user', user_id=user['id']) }}">Editar</a>
               {% if user['id'] != current_user_id %}
                 {% if user['role'] == 'teacher' %}
                   <a class="button button-small button-secondary" href="{{ url_for('edit_teacher_assignments', user_id=user['id']) }}">Asignaciones</a>
                 {% endif %}
-                <form method="post" action="{{ url_for('delete_user', user_id=user['id']) }}" onsubmit="return confirm('¿Eliminar la cuenta de {{ user['username'] }}? Sus notas se conservaran.');">
+                <form method="post" action="{{ url_for('delete_user', user_id=user['id']) }}" onsubmit="return confirm('¿Eliminar la cuenta de {{ user['username'] }}? Sus notas se conservarán.');">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button class="button button-small button-danger" type="submit">Eliminar</button>
                 </form>
@@ -58,7 +60,7 @@
       <form method="post" action="{{ url_for('create_classroom') }}" class="stack">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <label>Grado<input name="grade" placeholder="Ej. 1ro" required></label>
-        <label>Aula o seccion<input name="name" placeholder="Ej. A" required></label>
+        <label>Aula o sección<input name="name" placeholder="Ej. A" required></label>
         <button class="button button-primary" type="submit">Agregar grado y aula</button>
       </form>
       <h3>Grupos existentes</h3>
@@ -67,37 +69,14 @@
           {% for classroom in classrooms %}
             <li>
               <span>{{ classroom['grade'] }} · {{ classroom['name'] }}<span class="list-detail">{{ classroom['student_count'] }} alumnos</span></span>
-              <form method="post" action="{{ url_for('delete_classroom', classroom_id=classroom['id']) }}" onsubmit="return confirm('¿Eliminar {{ classroom['grade'] }} · {{ classroom['name'] }}? Tambien se eliminaran sus alumnos y todas sus notas.');">
+              <form method="post" action="{{ url_for('delete_classroom', classroom_id=classroom['id']) }}" onsubmit="return confirm('¿Eliminar {{ classroom['grade'] }} · {{ classroom['name'] }}? También se eliminarán sus alumnos y todas sus notas.');">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button class="button button-small button-danger" type="submit">Eliminar</button>
               </form>
             </li>
           {% endfor %}
         </ul>
-      {% else %}<p class="muted">Aun no hay grupos.</p>{% endif %}
-    </section>
-    <section class="card">
-      <h2>Agregar alumno</h2>
-      <form method="post" action="{{ url_for('create_student') }}" class="stack">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <label>Grado y aula<select name="classroom_id" required><option value="">Seleccionar...</option>{% for classroom in classrooms %}<option value="{{ classroom['id'] }}">{{ classroom['grade'] }} · {{ classroom['name'] }}</option>{% endfor %}</select></label>
-        <label>Nombre del alumno<input name="name" required></label>
-        <button class="button button-primary" type="submit">Agregar alumno</button>
-      </form>
-      <h3>Alumnos existentes</h3>
-      {% if students %}
-        <ul class="compact-list">
-          {% for student in students %}
-            <li>
-              <span>{{ student['name'] }}<span class="list-detail">{{ student['grade'] }} · {{ student['classroom'] }}</span></span>
-              <form method="post" action="{{ url_for('delete_student', student_id=student['id']) }}" onsubmit="return confirm('¿Eliminar a {{ student['name'] }}? Tambien se eliminaran todas sus notas.');">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button class="button button-small button-danger" type="submit">Eliminar</button>
-              </form>
-            </li>
-          {% endfor %}
-        </ul>
-      {% else %}<p class="muted">Aun no hay alumnos.</p>{% endif %}
+      {% else %}<p class="muted">Aún no hay grupos.</p>{% endif %}
     </section>
     <section class="card">
       <h2>Materias</h2>
@@ -112,14 +91,14 @@
           {% for subject in subjects %}
             <li>
               <span>{{ subject['name'] }}</span>
-              <form method="post" action="{{ url_for('delete_subject', subject_id=subject['id']) }}" onsubmit="return confirm('¿Eliminar la materia {{ subject['name'] }}? Tambien se eliminaran todas sus notas.');">
+              <form method="post" action="{{ url_for('delete_subject', subject_id=subject['id']) }}" onsubmit="return confirm('¿Eliminar la materia {{ subject['name'] }}? También se eliminarán todas sus notas.');">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button class="button button-small button-danger" type="submit">Eliminar</button>
               </form>
             </li>
           {% endfor %}
         </ul>
-      {% else %}<p class="muted">Aun no hay materias.</p>{% endif %}
+      {% else %}<p class="muted">Aún no hay materias.</p>{% endif %}
     </section>
   </div>
 {% endblock %}

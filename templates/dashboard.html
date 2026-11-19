@@ -3,11 +3,12 @@
 {% block content %}
   <section class="page-heading">
     <div>
-      <p class="eyebrow">{{ 'Panel de administracion' if g.user['role'] == 'admin' else 'Portal del maestro' }}</p>
+      <p class="eyebrow">{{ institution_name }}</p>
+      <span class="badge">{{ 'Panel de administración' if g.user['role'] == 'admin' else 'Portal del maestro' }}</span>
       <h1>Bienvenido, {{ g.user['username'] }}</h1>
       <p class="muted">
         {% if g.user['role'] == 'teacher' %}
-          Selecciona el grado y aula para registrar calificaciones. Una vez guardadas, solo un administrador podra cambiarlas.
+          Selecciona el grado y aula para registrar calificaciones. Una vez guardadas, solo un administrador podrá cambiarlas.
         {% else %}
           Administra las cuentas y grupos, revisa las calificaciones y exporta los registros a Excel.
         {% endif %}

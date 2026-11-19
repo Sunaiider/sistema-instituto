@@ -1,0 +1,198 @@
+{% extends "layout.html" %}
+{% block title %}Estudiantes{% endblock %}
+{% block content %}
+  <section class="page-heading">
+    <div>
+      <p class="eyebrow">Control del sistema</p>
+      <h1>Estudiantes</h1>
+      <p class="muted">Agrega estudiantes y consulta el listado organizado por grado y aula.</p>
+    </div>
+    <div class="heading-actions">
+      <a class="button button-secondary" href="{{ url_for('admin') }}">Volver a administración</a>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Agregar modalidad</h2>
+    <form method="post" action="{{ url_for('create_modality') }}" class="stack">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label>Nombre de la modalidad (ej. Regular)
+        <input name="name" required maxlength="100">
+      </label>
+      <button class="button button-primary" type="submit">Agregar modalidad</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Agregar varios estudiantes</h2>
+    <p class="muted">Elige el grado, aula y modalidad una sola vez. Completa una fila por estudiante; puedes dejar vacías las filas que no necesites.</p>
+    <form method="post" action="{{ url_for('create_students_bulk') }}" class="stack">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label>Grado y aula
+        <select name="classroom_id" required>
+          <option value="">Seleccionar...</option>
+          {% for classroom in classrooms %}
+            <option value="{{ classroom['id'] }}">{{ classroom['grade'] }} · {{ classroom['name'] }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Modalidad
+        <select name="modality" required>
+          <option value="">Seleccionar...</option>
+          {% for modality in modalities %}
+            <option value="{{ modality['name'] }}">{{ modality['name'] }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <div class="table-wrap student-entry-table">
+        <table>
+          <thead>
+            <tr><th scope="col">Nombre</th><th scope="col">Sexo</th><th scope="col">Código de persona</th><th scope="col">Acción</th></tr>
+          </thead>
+          <tbody id="student-rows">
+            {% for row in range(3) %}
+              <tr>
+                <td><input name="student_name" maxlength="255" aria-label="Nombre del estudiante"></td>
+                <td>
+                  <select name="student_sex" aria-label="Sexo del estudiante">
+                    <option value="">Seleccionar...</option>
+                    <option value="F">F</option>
+                    <option value="M">M</option>
+                  </select>
+                </td>
+                <td><input name="student_person_code" maxlength="100" aria-label="Código de persona del estudiante"></td>
+                <td><button class="button button-small button-danger" type="button" data-remove-row>Quitar</button></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="student-row-controls">
+        <label for="student-row-count">Filas por agregar (1 a 100)
+          <input id="student-row-count" type="number" min="1" max="100" value="1" required>
+        </label>
+        <button class="button button-secondary" type="button" id="add-student-rows">Agregar filas</button>
+      </div>
+      <button class="button button-primary" type="submit">Agregar estudiantes</button>
+    </form>
+  </section>
+
+  <template id="student-row-template">
+    <tr>
+      <td><input name="student_name" maxlength="255" aria-label="Nombre del estudiante"></td>
+      <td>
+        <select name="student_sex" aria-label="Sexo del estudiante">
+          <option value="">Seleccionar...</option>
+          <option value="F">F</option>
+          <option value="M">M</option>
+        </select>
+      </td>
+      <td><input name="student_person_code" maxlength="100" aria-label="Código de persona del estudiante"></td>
+      <td><button class="button button-small button-danger" type="button" data-remove-row>Quitar</button></td>
+    </tr>
+  </template>
+  <script>
+    const studentRows = document.getElementById("student-rows");
+    const studentRowTemplate = document.getElementById("student-row-template");
+    const rowCountInput = document.getElementById("student-row-count");
+    document.getElementById("add-student-rows").addEventListener("click", () => {
+      if (!rowCountInput.reportValidity()) return;
+      const count = Number(rowCountInput.value);
+      for (let index = 0; index < count; index += 1) {
+        studentRows.appendChild(studentRowTemplate.content.cloneNode(true));
+      }
+    });
+    studentRows.addEventListener("click", (event) => {
+      const removeButton = event.target.closest("[data-remove-row]");
+      if (removeButton) removeButton.closest("tr").remove();
+    });
+  </script>
+
+  <section class="card">
+    <h2>Importar estudiantes desde Excel</h2>
+    <p class="muted">El archivo .xlsx debe incluir Nombre y Sexo (F o M); el código de persona puede repetirse o quedar vacío. Si incluye Modalidad, las modalidades nuevas se crearán al importar; si no, selecciona una aquí. Para asignar cada estudiante a su grupo, incluye las columnas Nivel y Sección (o Sec./Aula); los grados y aulas que aún no existan también se crearán. Si el archivo no incluye Nivel y Sección, selecciona un solo grado y aula para todo el archivo.</p>
+    <p><a class="button button-secondary" href="{{ url_for('student_import_template') }}">Descargar plantilla Excel</a></p>
+    <form method="post" action="{{ url_for('create_students_bulk') }}" enctype="multipart/form-data" class="stack">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label>Grado y aula
+        <select name="classroom_id">
+          <option value="">Seleccionar...</option>
+          {% for classroom in classrooms %}
+            <option value="{{ classroom['id'] }}">{{ classroom['grade'] }} · {{ classroom['name'] }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Modalidad
+        <select name="modality">
+          <option value="">Seleccionar...</option>
+          {% for modality in modalities %}
+            <option value="{{ modality['name'] }}">{{ modality['name'] }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Archivo Excel (.xlsx)
+        <input type="file" name="student_file" accept=".xlsx" required>
+      </label>
+      <button class="button button-primary" type="submit">Importar estudiantes</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Matricular o promover un grupo completo</h2>
+    <p class="muted">Selecciona un grado/aula de origen y el grupo destino. Todos los estudiantes del grupo de origen quedarán matriculados en el destino para ese año escolar; si ya tienen matrícula para ese año, se actualizará.</p>
+    <form method="post" action="{{ url_for('bulk_student_enrollment') }}" class="filter-row">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label>Grado/aula de origen
+        <select name="source_classroom_id" required>
+          <option value="">Seleccionar...</option>
+          {% for classroom in classrooms %}
+            <option value="{{ classroom['id'] }}">{{ classroom['grade'] }} · Aula {{ classroom['name'] }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Grado/aula destino
+        <select name="target_classroom_id" required>
+          <option value="">Seleccionar...</option>
+          {% for classroom in classrooms %}
+            <option value="{{ classroom['id'] }}">{{ classroom['grade'] }} · Aula {{ classroom['name'] }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Año escolar
+        <input name="school_year" type="number" min="1900" max="2100" step="1" value="{{ current_school_year }}" required>
+      </label>
+      <button class="button button-primary" type="submit">Matricular grupo</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Lista por grado y aula</h2>
+    {% if students %}
+      {% for classroom in classrooms %}
+        {% set classroom_students = students|selectattr('classroom_id', 'equalto', classroom['id'])|list %}
+        {% if classroom_students %}
+          <section class="subject-group">
+            <h3>{{ classroom['grade'] }} · Aula {{ classroom['name'] }}</h3>
+            <ul class="compact-list">
+              {% for student in classroom_students %}
+                <li>
+                  <span>{{ student['name'] }}<span class="list-detail">Modalidad: {{ student['modality'] }} · Sexo: {{ student['sex'] or 'Pendiente' }} · Código: {{ student['person_code'] or 'Pendiente' }}</span></span>
+                  <span class="account-actions">
+                    <a class="button button-small button-primary" href="{{ url_for('student_record', student_id=student['id']) }}">Expediente</a>
+                    <a class="button button-small button-secondary" href="{{ url_for('edit_student', student_id=student['id']) }}">Editar</a>
+                    <form method="post" action="{{ url_for('delete_student', student_id=student['id']) }}" onsubmit="return confirm('¿Eliminar a {{ student['name'] }}? También se eliminarán todas sus notas.');">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button class="button button-small button-danger" type="submit">Eliminar</button>
+                    </form>
+                  </span>
+                </li>
+              {% endfor %}
+            </ul>
+          </section>
+        {% endif %}
+      {% endfor %}
+    {% else %}
+      <p class="empty-state">Aún no hay estudiantes registrados.</p>
+    {% endif %}
+  </section>
+{% endblock %}

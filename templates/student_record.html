@@ -1,0 +1,111 @@
+{% extends "layout.html" %}
+{% block title %}Expediente de {{ student['name'] }}{% endblock %}
+{% block content %}
+  <section class="page-heading">
+    <div>
+      <p class="eyebrow">Expediente académico</p>
+      <h1>{{ student['name'] }}</h1>
+      <p class="muted">Grado actual: {{ student['grade'] }} · Aula {{ student['classroom'] }}</p>
+    </div>
+    <div class="heading-actions">
+      <a class="button button-secondary" href="{{ url_for('edit_student', student_id=student['id']) }}">Editar datos</a>
+      <a class="button button-secondary" href="{{ url_for('admin_students') }}">Volver a estudiantes</a>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Datos del estudiante</h2>
+    <div class="table-wrap">
+      <table>
+        <tbody>
+          <tr><th>Nombre y apellido</th><td>{{ student['name'] }}</td></tr>
+          <tr><th>Código de persona</th><td>{{ student['person_code'] or 'No registrado' }}</td></tr>
+          <tr><th>Sexo</th><td>{{ student['sex'] or 'No registrado' }}</td></tr>
+          <tr><th>Modalidad</th><td>{{ student['modality'] }}</td></tr>
+          <tr><th>Grado y aula actuales</th><td>{{ student['grade'] }} · Aula {{ student['classroom'] }}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Registrar matrícula o promoción</h2>
+    <p class="muted">Agrega el grado y aula que cursará el estudiante en el año escolar indicado. Cada año solo puede tener una matrícula por estudiante.</p>
+    <form method="post" action="{{ url_for('student_record', student_id=student['id']) }}" class="filter-row">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label>Año escolar
+        <input name="school_year" type="number" min="1900" max="2100" step="1" value="{{ school_year }}" required>
+      </label>
+      <label>Grado y aula
+        <select name="classroom_id" required>
+          {% for classroom in classrooms %}
+            <option value="{{ classroom['id'] }}" {{ 'selected' if classroom['id'] == student['classroom_id'] else '' }}>
+              {{ classroom['grade'] }} · Aula {{ classroom['name'] }}
+            </option>
+          {% endfor %}
+        </select>
+      </label>
+      <button class="button button-primary" type="submit">Guardar matrícula</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Historial de grados cursados</h2>
+    {% if enrollments %}
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Año escolar</th><th>Grado</th><th>Aula</th><th>Estado</th></tr></thead>
+          <tbody>
+            {% for enrollment in enrollments %}
+              <tr>
+                <td>{{ enrollment['school_year'] }}</td>
+                <td>{{ enrollment['grade'] }}</td>
+                <td>{{ enrollment['classroom'] }}</td>
+                <td>
+                  {% if enrollment['school_year'] == school_year %}
+                    Actual
+                  {% elif enrollment['school_year'] > school_year %}
+                    Próximo
+                  {% else %}
+                    Cursado
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="empty-state">Todavía no hay matrículas en el historial.</p>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <h2>Historial de notas</h2>
+    {% if grades %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Año escolar</th><th>Grado</th><th>Aula</th><th>Materia</th><th>Corte evaluativo</th><th>Nota</th><th>Maestro</th><th>Fecha</th></tr>
+          </thead>
+          <tbody>
+            {% for grade in grades %}
+              <tr>
+                <td>{{ grade['school_year'] }}</td>
+                <td>{{ grade['grade'] }}</td>
+                <td>{{ grade['classroom'] }}</td>
+                <td>{{ grade['subject'] }}</td>
+                <td>{{ grade['term'] }}</td>
+                <td>{{ grade['score']|grade_score }}</td>
+                <td>{{ grade['teacher'] }}</td>
+                <td>{{ grade['created_at'][:10] }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="empty-state">Todavía no hay notas registradas para este estudiante.</p>
+    {% endif %}
+  </section>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+{% block title %}Editar estudiante{% endblock %}
+{% block content %}
+  <section class="page-heading">
+    <div>
+      <p class="eyebrow">Control del sistema</p>
+      <h1>Editar estudiante</h1>
+      <p class="muted">Completa o corrige los datos de {{ student['name'] }}.</p>
+      <p class="muted">Para registrar un cambio de grado o aula, hazlo desde su expediente.</p>
+    </div>
+    <a class="button button-secondary" href="{{ url_for('student_record', student_id=student['id']) }}">Volver al expediente</a>
+  </section>
+
+  <section class="card form-card">
+    <form method="post" class="stack">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label>Nombre y apellido
+        <input name="name" value="{{ student['name'] }}" maxlength="255" required>
+      </label>
+      <label>Modalidad
+        <select name="modality" required>
+          <option value="">Seleccionar...</option>
+          {% for modality in modalities %}
+            <option value="{{ modality['name'] }}" {{ 'selected' if student['modality'] == modality['name'] else '' }}>
+              {{ modality['name'] }}
+            </option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Sexo
+        <select name="sex" required>
+          <option value="">Seleccionar...</option>
+          <option value="F" {{ 'selected' if student['sex'] == 'F' else '' }}>Femenino (F)</option>
+          <option value="M" {{ 'selected' if student['sex'] == 'M' else '' }}>Masculino (M)</option>
+        </select>
+      </label>
+      <label>Código de persona
+        <input name="person_code" value="{{ student['person_code'] or '' }}" maxlength="100" required>
+      </label>
+      <div class="form-actions">
+        <a class="button button-secondary" href="{{ url_for('student_record', student_id=student['id']) }}">Cancelar</a>
+        <button class="button button-primary" type="submit">Guardar cambios</button>
+      </div>
+    </form>
+  </section>
+{% endblock %}

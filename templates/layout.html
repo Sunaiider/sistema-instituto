@@ -4,6 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Instituto{% endblock %} | Sistema de notas</title>
+  <script>
+    const savedTheme = localStorage.getItem("theme");
+    const preferredTheme = window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+    document.documentElement.dataset.theme =
+      savedTheme === "dark" || savedTheme === "light" ? savedTheme : preferredTheme;
+  </script>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -13,16 +22,25 @@
       <nav>
         <a href="{{ url_for('dashboard') }}">Inicio</a>
         <a href="{{ url_for('new_grades') if g.user['role'] == 'teacher' else url_for('grade_list') }}">Notas</a>
-        {% if g.user['role'] == 'admin' %}<a href="{{ url_for('admin') }}">Administracion</a>{% endif %}
+        {% if g.user['role'] == 'admin' %}<a href="{{ url_for('admin') }}">Administración</a>{% endif %}
       </nav>
+    {% endif %}
+    <div class="topbar-actions">
+      {% if g.user %}
       <div class="user-menu">
         <span>{{ g.user['username'] }} · {{ 'Administrador' if g.user['role'] == 'admin' else 'Maestro' }}</span>
         <form method="post" action="{{ url_for('logout') }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button class="button button-quiet" type="submit">Cerrar sesion</button>
+          <button class="button button-quiet" type="submit">Cerrar sesión</button>
         </form>
       </div>
-    {% endif %}
+      {% endif %}
+      <button class="theme-switch" id="theme-toggle" type="button" role="switch" aria-label="Modo oscuro" aria-checked="false" title="Cambiar a modo oscuro">
+        <span class="theme-switch-icon" aria-hidden="true">☀</span>
+        <span class="theme-switch-track" aria-hidden="true"><span class="theme-switch-thumb"></span></span>
+        <span class="theme-switch-icon" aria-hidden="true">☾</span>
+      </button>
+    </div>
   </header>
   <main class="container">
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -37,5 +55,20 @@
     {% block content %}{% endblock %}
   </main>
   <footer>Registro de calificaciones del instituto</footer>
+  <script>
+    const themeToggle = document.getElementById("theme-toggle");
+    const updateThemeToggle = () => {
+      const isDark = document.documentElement.dataset.theme === "dark";
+      themeToggle.setAttribute("aria-checked", String(isDark));
+      themeToggle.title = isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro";
+    };
+    updateThemeToggle();
+    themeToggle.addEventListener("click", () => {
+      const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+      document.documentElement.dataset.theme = nextTheme;
+      localStorage.setItem("theme", nextTheme);
+      updateThemeToggle();
+    });
+  </script>
 </body>
 </html>

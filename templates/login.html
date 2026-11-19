@@ -1,16 +1,17 @@
 {% extends "layout.html" %}
-{% block title %}Iniciar sesion{% endblock %}
+{% block title %}Iniciar sesión{% endblock %}
 {% block content %}
   <section class="login-card card">
-    <p class="eyebrow">Portal academico</p>
-    <h1>Iniciar sesion</h1>
-    <p class="muted">Ingresa con la cuenta que te proporciono el administrador.</p>
+    <p class="eyebrow">{{ institution_name }}</p>
+    <p class="muted">Portal académico</p>
+    <h1>Iniciar sesión</h1>
+    <p class="muted">Ingresa con la cuenta que te proporcionó el administrador.</p>
     <form method="post" class="stack">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <label>Usuario
         <input name="username" autocomplete="username" required autofocus>
       </label>
-      <label>Contrasena
+      <label>Contraseña
         <input name="password" type="password" autocomplete="current-password" required>
       </label>
       <button class="button button-primary" type="submit">Entrar</button>

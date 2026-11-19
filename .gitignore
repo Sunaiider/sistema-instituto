@@ -4,6 +4,7 @@ __pycache__/
 *.pyo
 *.pyd
 .venv/
+.wasmer/
 venv/
 env/
 ENV/
@@ -20,6 +21,7 @@ instance/*.db-journal
 # Environment / secrets
 .env
 .env.*
+!.env.example
 .secret
 *.pem
 

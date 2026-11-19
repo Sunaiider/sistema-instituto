@@ -2,8 +2,8 @@
 {% block title %}Notas{% endblock %}
 {% block content %}
   <section class="page-heading">
-    <div><p class="eyebrow">Registro academico</p><h1>Notas por materia</h1>
-      <p class="muted">{% if g.user['role'] == 'teacher' %}Elige un grado y aula para consultar tus calificaciones registradas.{% else %}Las notas estan organizadas por materia. Elige un grado y aula para ver alumnos y calificaciones.{% endif %}</p>
+    <div><p class="eyebrow">Registro académico</p><h1>Notas por materia</h1>
+      <p class="muted">{% if g.user['role'] == 'teacher' %}Elige un grado y aula para consultar tus calificaciones registradas.{% else %}Las notas están organizadas por materia. Elige un grado y aula para ver alumnos y calificaciones.{% endif %}</p>
     </div>
     <div class="heading-actions">
       {% if g.user['role'] == 'admin' %}<a class="button button-secondary" href="{{ url_for('manage_grades') }}">Agregar notas</a>{% endif %}
@@ -19,7 +19,7 @@
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Grado</th><th>Aula</th><th>Calificaciones registradas</th><th>Periodos</th><th>Acciones</th></tr></thead>
+              <thead><tr><th>Grado</th><th>Aula</th><th>Calificaciones registradas</th><th>Cortes evaluativos</th><th>Acciones</th></tr></thead>
               <tbody>
                 {% for summary in subject_summaries %}
                   <tr>
@@ -39,7 +39,7 @@
         </section>
       {% endfor %}
     {% else %}
-      <p class="empty-state">Todavia no hay notas registradas.</p>
+      <p class="empty-state">Todavía no hay notas registradas.</p>
     {% endif %}
   </section>
 {% endblock %}
